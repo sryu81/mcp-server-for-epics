@@ -37,18 +37,32 @@ static void sendError(long long id, int code, const char *message,
     mcpProtocolFlush(gen, writeFn, writeCtx);
 }
 
+/* All protocol versions this server can speak */
+static const char * const s_supported_versions[] = {
+    "2025-11-25",
+    "2024-11-05",
+    NULL
+};
+
 static void handleInitialize(McpJsonValue *root, long long id,
                              McpWriteFn writeFn, void *writeCtx)
 {
-    /* Version negotiation: if client requests a version we don't support,
-       respond with our own. Client decides whether to disconnect. */
+    /* Version negotiation: echo client version if we support it,
+       otherwise respond with our latest. Client decides whether to disconnect. */
     McpJsonValue *params = mcpJsonMapGet(root, "params");
     const char *clientVer = params
         ? mcpJsonGetString(mcpJsonMapGet(params, "protocolVersion"))
         : NULL;
-    const char *agreedVer = (clientVer && strcmp(clientVer, MCP_PROTOCOL_VERSION) == 0)
-        ? clientVer
-        : MCP_PROTOCOL_VERSION;
+    const char *agreedVer = MCP_PROTOCOL_VERSION;
+    if (clientVer) {
+        int i;
+        for (i = 0; s_supported_versions[i]; i++) {
+            if (strcmp(clientVer, s_supported_versions[i]) == 0) {
+                agreedVer = s_supported_versions[i];
+                break;
+            }
+        }
+    }
 
     yajl_gen gen = yajl_gen_alloc(NULL);
     yajl_gen_map_open(gen);
@@ -79,6 +93,8 @@ static void handleInitialize(McpJsonValue *root, long long id,
         "Use epics_get/epics_put to read/write EPICS PVs. "
         "Use epics_monitor to collect changes over a time window. "
         "Use epics_info for connection metadata and type info. "
+        "To list all PV names, use epics_iocsh with command 'dbl' — "
+        "epics_dbl is a stub and always redirects to this. "
         "epics_iocsh/epics_dbl/epics_dbload require IOC-embedded mode.");
 
     yajl_gen_map_close(gen);

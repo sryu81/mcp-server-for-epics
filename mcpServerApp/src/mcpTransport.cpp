@@ -96,8 +96,9 @@ static enum MHD_Result answerToConnection(
         return rc;
     }
 
-    /* --- POST /mcp — JSON-RPC --- */
-    if (strcmp(method, "POST") == 0 && strcmp(url, "/mcp") == 0) {
+    /* --- POST /mcp (or legacy /message) — JSON-RPC --- */
+    if (strcmp(method, "POST") == 0 &&
+        (strcmp(url, "/mcp") == 0 || strcmp(url, "/message") == 0)) {
         if (*con_cls == NULL) {
             /* First call: allocate per-connection state */
             struct PostCtx *pctx = (struct PostCtx *)calloc(1, sizeof(struct PostCtx));

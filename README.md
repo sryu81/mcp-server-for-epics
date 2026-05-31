@@ -5,7 +5,7 @@ A working well (maybe) MCP server support module for epics.
 Just give your controls to your AI agent.
 
 - Exposing EPICS PV as JSON-RPC 2.0 tools
-- Protocol version : 2024-11-05
+- Protocol version : 2025-11-25 (also accepts 2024-11-05 clients)
 - server version : 2.0.0 
 - Two deployment modes, one EPICS shared library
 
@@ -123,7 +123,7 @@ Claude Desktop config (~/.config/claude/claude_desktop_config.json on Linux):
 {
     "mcpServers": {
     "epics": {
-        "command": "/path/to/epics-base/bin/linux-x86_64/epicsMcpServer",
+        "command": "/path/to/mcpServer/bin/linux-x86_64/epicsMcpServer",
         "args": [],
         "env": {
         "EPICS_CA_ADDR_LIST": "your-ioc-host",
@@ -170,21 +170,74 @@ HTTP client usage:
 # Initialize
 curl -s -X POST http://ioc-host:8080/mcp \
 -H 'Content-Type: application/json' \
--d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
+-d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","clientInfo":{"name":"curl","version":"0"}}}'
 
-# Call a tool
+# List available tools
 curl -s -X POST http://ioc-host:8080/mcp \
 -H 'Content-Type: application/json' \
--d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"epics_get","arguments":{"pvn
-ames":["MY:PV"]}}}'
+-d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
+
+# epics_get — read PVs
+curl -s -X POST http://ioc-host:8080/mcp \
+-H 'Content-Type: application/json' \
+-d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"epics_get","arguments":{"pvnames":["MY:TEMP","MY:PRESSURE"]}}}'
+
+# epics_get — Channel Access, custom timeout
+curl -s -X POST http://ioc-host:8080/mcp \
+-H 'Content-Type: application/json' \
+-d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"epics_get","arguments":{"pvnames":["MY:PV"],"protocol":"ca","timeout":10.0}}}'
+
+# epics_put — write a value
+curl -s -X POST http://ioc-host:8080/mcp \
+-H 'Content-Type: application/json' \
+-d '{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"epics_put","arguments":{"pvname":"MY:SETPOINT","value":42.5}}}'
+
+# epics_monitor — collect changes over 5 seconds
+curl -s -X POST http://ioc-host:8080/mcp \
+-H 'Content-Type: application/json' \
+-d '{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"epics_monitor","arguments":{"pvnames":["MY:WAVEFORM"],"duration":5.0}}}'
+
+# epics_info — connection metadata
+curl -s -X POST http://ioc-host:8080/mcp \
+-H 'Content-Type: application/json' \
+-d '{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"epics_info","arguments":{"pvnames":["MY:PV"]}}}'
+
+# epics_version — EPICS build info
+curl -s -X POST http://ioc-host:8080/mcp \
+-H 'Content-Type: application/json' \
+-d '{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"epics_version","arguments":{}}}'
+
+# epics_status — server status
+curl -s -X POST http://ioc-host:8080/mcp \
+-H 'Content-Type: application/json' \
+-d '{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"epics_status","arguments":{}}}'
+
+# epics_iocsh — run iocsh command (IOC-embedded only)
+curl -s -X POST http://ioc-host:8080/mcp \
+-H 'Content-Type: application/json' \
+-d '{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"epics_iocsh","arguments":{"command":"dbl"}}}'
+
+# epics_dbl — list records with optional pattern (IOC-embedded only; stub in standalone)
+curl -s -X POST http://ioc-host:8080/mcp \
+-H 'Content-Type: application/json' \
+-d '{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"epics_dbl","arguments":{"pattern":"MY:*"}}}'
+
+# epics_dbload — load a database file (IOC-embedded only)
+curl -s -X POST http://ioc-host:8080/mcp \
+-H 'Content-Type: application/json' \
+-d '{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"epics_dbload","arguments":{"filename":"/path/to/records.db","macros":"P=MY:,R=PV"}}}'
+
+# ping
+curl -s -X POST http://ioc-host:8080/mcp \
+-H 'Content-Type: application/json' \
+-d '{"jsonrpc":"2.0","id":13,"method":"ping","params":{}}'
 ```
 
 IOC-embedded notes:
-- epics_iocsh and epics_dbl and epics_dbload only work in IOC-embedded mode — they require
-iocshCmd() and dbCore linkage
-- epics_dbl currently returns a stub directing you to use epics_iocsh with dbl command (direct dbl
-needs dbCore; epicsMcpServer only links ca + Com)
-- epics_dbload same situation — stub, use epics_iocsh with dbLoadRecords("file.db","macros")
+- epics_iocsh requires IOC-embedded mode (iocshCmd() linkage); use `dbl` command to list PVs, `dbgf`/`dbpf` to read/write records
+- epics_dbl always returns a stub regardless of mode — use epics_iocsh with command `"dbl"` instead
+- epics_dbload always returns a stub regardless of mode — use epics_iocsh with command `"dbLoadRecords(\"file.db\",\"P=X:,R=Y\")"` instead
+- In standalone mode, epics_iocsh itself is also limited — iocsh commands requiring a loaded IOC database (dbl, dbgf, dbpf) will not work
 - HTTP server: one thread per connection (MHD_USE_THREAD_PER_CONNECTION), 120s connection timeout
 
 Stop: 
@@ -216,7 +269,7 @@ All other methods → error -32601 Method not found.
   <summary>Click here to expand the section</summary>
   
 
-All tools accept an optional "protocol": "pva" (default) or "protocol": "ca" parameter.
+epics_get, epics_put, epics_monitor, and epics_info accept an optional `"protocol": "pva"` (default) or `"protocol": "ca"` parameter.
 
 **epics_get** : Read one or more PVs.
 ```json
@@ -238,7 +291,9 @@ All tools accept an optional "protocol": "pva" (default) or "protocol": "ca" par
 "timeout": 5.0
 }
 ```
-- value: string, integer, or double (no arrays/objects)
+- pvname: string (required)
+- value: string, integer, or double (required; no arrays/objects)
+- timeout: seconds (default 5.0)
 
 **epics_monitor** : Collect all value changes over a time window.
 ```json
@@ -248,16 +303,20 @@ All tools accept an optional "protocol": "pva" (default) or "protocol": "ca" par
 "protocol": "pva"
 }
 ```
-- duration: seconds, capped at 30.0 (MCP_MONITOR_MAX_DURATION), minimum 1.0
+- pvnames: array of strings (required)
+- duration: seconds, minimum 1.0, maximum 30.0 (MCP_MONITOR_MAX_DURATION); values outside range are clamped
 
 **epics_info** : Connection and metadata for PVs (type, host, alarm status, etc.).
 
 ```json
 {
 "pvnames": ["MY:PV"],
-"protocol": "pva"
-} 
+"protocol": "pva",
+"timeout": 5.0
+}
 ```
+- pvnames: array of strings (required)
+- timeout: seconds (default 5.0)
 
 **epics_iocsh (IOC-embedded only)** : Execute any iocsh command; stdout captured via pipe (POSIX only — Windows returns stub).
 ```json
@@ -278,12 +337,13 @@ Buffer capped at 8192 bytes (IOCSH_BUF_SIZE).
 - No parameters. Returns server name, server version, EPICS version, protocol availability map.
 
 **epics_dbl**
-- Lists database records. Currently a stub in standalone mode — use epics_iocsh + "dbl" command
-instead.
+- Always returns a stub. Use epics_iocsh with command `"dbl"` to list PV names (IOC-embedded only).
+- pattern: string (optional, accepted but ignored — filtering must be done on the dbl output via epics_iocsh)
 
 **epics_dbload**
-- Load a .db/.dbd file. Stub in standalone mode — use epics_iocsh +
-"dbLoadRecords(\"file.db\",\"macros\")".
+- Always returns a stub. Use epics_iocsh with command `"dbLoadRecords(\"file.db\",\"P=X:,R=Y\")"` instead (IOC-embedded only).
+- filename: string (required, path to .db or .dbd file)
+- macros: string (optional, comma-separated substitutions e.g. `"P=MY:,R=ai1"`)
 
 ---
 </details>
@@ -293,5 +353,5 @@ instead.
 
 | Version | Date | Notes |
 |---|---|---|
-| 2.0.0 | 2026-05-31 | Restructured as standalone EPICS support module (configure/ dir, mcpServerApp/ layout). Upgraded MCP protocol to 2025-11-25: version negotiation in initialize, tool `title` and `required` schema fields, `additionalProperties:false` for no-param tools, `MCP-Protocol-Version` response header, `instructions` in initialize response. HTTP endpoint renamed `/message` → `/mcp`. |
+| 2.0.0 | 2026-05-31 | Restructured as standalone EPICS support module (configure/ dir, mcpServerApp/ layout). Upgraded MCP protocol to 2025-11-25: version negotiation in initialize, tool `title` and `required` schema fields, `additionalProperties:false` for no-param tools, `MCP-Protocol-Version` response header, `instructions` in initialize response. HTTP endpoint renamed `/message` → `/mcp` (legacy `/message` still accepted). Backward-compatible version negotiation: server echoes `2024-11-05` back to older clients. Improved tool descriptions and schemas for AI agent discoverability. |
 | 1.x | — | Embedded in epics-base/modules. Protocol version 2024-11-05. Stdio + HTTP transports. |

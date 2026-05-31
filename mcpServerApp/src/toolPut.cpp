@@ -18,7 +18,13 @@ void toolPutSchema(yajl_gen gen)
 
     mcpGenString(gen, "value");
     yajl_gen_map_open(gen);
-    mcpGenKeyString(gen, "description", "Value to write (string or number)");
+    mcpGenString(gen, "type");
+    yajl_gen_array_open(gen);
+    mcpGenString(gen, "string");
+    mcpGenString(gen, "number");
+    mcpGenString(gen, "integer");
+    yajl_gen_array_close(gen);
+    mcpGenKeyString(gen, "description", "Value to write (string, integer, or double; no arrays/objects)");
     yajl_gen_map_close(gen);
 
     mcpGenString(gen, "protocol");

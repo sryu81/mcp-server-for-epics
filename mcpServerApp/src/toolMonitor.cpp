@@ -23,7 +23,7 @@ void toolMonitorSchema(yajl_gen gen)
     mcpGenString(gen, "duration");
     yajl_gen_map_open(gen);
     mcpGenKeyString(gen, "type", "number");
-    mcpGenKeyString(gen, "description", "Duration in seconds to monitor (max 30)");
+    mcpGenKeyString(gen, "description", "Duration in seconds to monitor (minimum 1.0, maximum 30.0; values outside range are clamped)");
     yajl_gen_map_close(gen);
 
     mcpGenString(gen, "protocol");

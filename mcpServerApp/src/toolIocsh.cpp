@@ -19,7 +19,7 @@ void toolIocshSchema(yajl_gen gen)
     mcpGenString(gen, "command");
     yajl_gen_map_open(gen);
     mcpGenKeyString(gen, "type", "string");
-    mcpGenKeyString(gen, "description", "IOC shell command to execute");
+    mcpGenKeyString(gen, "description", "IOC shell command string, e.g. 'dbl' (list PVs), 'dbgf PVname' (read record), 'dbpf PVname value' (write record)");
     yajl_gen_map_close(gen);
 }
 

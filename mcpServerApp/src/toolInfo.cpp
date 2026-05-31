@@ -25,6 +25,12 @@ void toolInfoSchema(yajl_gen gen)
     mcpGenKeyString(gen, "type", "string");
     mcpGenKeyString(gen, "description", "Protocol: 'pva' (default) or 'ca'");
     yajl_gen_map_close(gen);
+
+    mcpGenString(gen, "timeout");
+    yajl_gen_map_open(gen);
+    mcpGenKeyString(gen, "type", "number");
+    mcpGenKeyString(gen, "description", "Timeout in seconds (default: 5.0)");
+    yajl_gen_map_close(gen);
 }
 
 int toolInfoHandler(const McpJsonValue *params, yajl_gen gen)

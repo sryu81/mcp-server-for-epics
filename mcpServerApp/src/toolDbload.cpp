@@ -34,8 +34,7 @@ int toolDbloadHandler(const McpJsonValue *params, yajl_gen gen)
      */
     yajl_gen_map_open(gen);
     mcpGenKeyString(gen, "info",
-        "Use epics_iocsh with command 'dbLoadRecords(\"file.db\",\"macros\")' "
-        "to load database files. Direct loading requires IOC database linkage.");
+        "epics_dbload is a stub. Call epics_iocsh with {\"command\":\"dbLoadRecords(\\\"file.db\\\",\\\"P=X:,R=Y\\\")\"} to load database files.");
     yajl_gen_map_close(gen);
 
     return 0;

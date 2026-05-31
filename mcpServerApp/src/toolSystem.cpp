@@ -89,8 +89,7 @@ int toolDblHandler(const McpJsonValue *params, yajl_gen gen)
      */
     yajl_gen_map_open(gen);
     mcpGenKeyString(gen, "info",
-        "Use epics_iocsh with command 'dbl' to list records. "
-        "Direct dbl requires IOC database linkage.");
+        "epics_dbl is a stub. Call epics_iocsh with {\"command\":\"dbl\"} to list all PV names.");
     yajl_gen_map_close(gen);
 
     return 0;

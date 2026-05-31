@@ -8,13 +8,14 @@ static const char * const s_req_put[]     = {"pvname", "value", NULL};
 static const char * const s_req_monitor[] = {"pvnames", "duration", NULL};
 static const char * const s_req_info[]    = {"pvnames", NULL};
 static const char * const s_req_iocsh[]   = {"command", NULL};
+static const char * const s_req_dbload[]  = {"filename", NULL};
 static const char * const s_req_none[]    = {NULL}; /* optional params, none required */
 
 static McpToolDef tools[] = {
     {
         "epics_get",
         "Read PV Values",
-        "Read one or more EPICS PV values (pvAccess or Channel Access, default: pva)",
+        "Read one or more EPICS PV values. Returns value, alarm status, and timestamp for each PV. Protocol: pva (default) or ca.",
         toolGetHandler, toolGetSchema, s_req_get
     },
     {
@@ -26,19 +27,19 @@ static McpToolDef tools[] = {
     {
         "epics_monitor",
         "Monitor PVs",
-        "Monitor EPICS PVs for changes over a time period (pvAccess or CA)",
+        "Collect all value changes from EPICS PVs over a time window (duration: 1.0–30.0 seconds, clamped). Returns list of timestamped updates. Protocol: pva (default) or ca.",
         toolMonitorHandler, toolMonitorSchema, s_req_monitor
     },
     {
         "epics_info",
         "PV Connection Info",
-        "Get connection and metadata info for EPICS PVs (pvAccess or CA)",
+        "Get connection and metadata for EPICS PVs. Returns type, host, alarm status, units, and display limits for each PV. Protocol: pva (default) or ca.",
         toolInfoHandler, toolInfoSchema, s_req_info
     },
     {
         "epics_iocsh",
         "IOC Shell Command",
-        "Execute an EPICS IOC shell command and return its output",
+        "[IOC-embedded only] Execute an EPICS IOC shell command and return its output. Use command 'dbl' to list all PV names.",
         toolIocshHandler, toolIocshSchema, s_req_iocsh
     },
     {
@@ -56,14 +57,14 @@ static McpToolDef tools[] = {
     {
         "epics_dbl",
         "List Database Records",
-        "List all database records, optionally filtered by pattern",
+        "[IOC-embedded only] List database records. Always returns a stub — use epics_iocsh with command 'dbl' instead.",
         toolDblHandler, toolDblSchema, s_req_none
     },
     {
         "epics_dbload",
         "Load Database File",
-        "Load an EPICS database file with optional macro substitutions",
-        toolDbloadHandler, toolDbloadSchema, s_req_none
+        "[IOC-embedded only] Load an EPICS database file. Always returns a stub — use epics_iocsh with command 'dbLoadRecords(\"file.db\",\"P=X:,R=Y\")' instead.",
+        toolDbloadHandler, toolDbloadSchema, s_req_dbload
     },
     { NULL, NULL, NULL, NULL, NULL, NULL }
 };
