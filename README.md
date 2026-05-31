@@ -49,26 +49,55 @@ libmicrohttpd-dev :  library embedding HTTP server functionality
 sudo apt install libmicrohttpd-dev -y
 ```
 
-## Install 
+## Install
 
-1. clone this repo in your epics base 
+This is a standalone EPICS support module. 
+
+### 1. Clone in $MODULES
 
 ```bash
-cd epics-base/modules
-
+cd $MODULES    <-- your module location
 git clone https://github.com/sryu81/mcp-server-for-epics-base.git mcpServer
+cd mcpServer
 ```
 
-2. add following lines to epics-base/module/Makefile
+### 2. Set EPICS_BASE in configure/RELEASE
 
-```Makefile
-DIRS += mcpServer
-mcpServer_DEPEND_DIRS = ca pvaClient pva2pva database
+```bash
+# Edit configure/RELEASE and set the correct path:
+EPICS_BASE = /path/to/your/epics-base
 ```
 
-3. rebuild your epics-base
+EPICS 7.0+ is required (pvAccess/pvaClient/pvData bundled with Base).
 
-you will get libmcpServer.a, libmcpServer.so.* in epics-base/lib/<arch> and epicsMcpServer in epics-base/bin
+### 3. Build
+
+```bash
+make
+```
+
+Outputs written to `lib/<arch>/` and `bin/<arch>/`:
+- `libmcpServer.so.*` — shared library for IOC embedding
+- `libmcpServer.a` — static library
+- `epicsMcpServer` — standalone executable
+
+### 4. Reference from an IOC application
+
+In your IOC's `configure/RELEASE`:
+
+```makefile
+MCPSERVER = /path/to/mcpServer
+```
+
+In your IOC's `src/Makefile`:
+
+```makefile
+# Link the library
+myioc_LIBS += mcpServer
+
+# Install the DBD
+myioc_DBD += mcpServer.dbd
+```
 
 
 ## Mode 1: Standalone executable (epicsMcpServer)

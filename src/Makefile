@@ -4,7 +4,7 @@
 # in file LICENSE that is included with this distribution.
 #*************************************************************************
 
-TOP = ../../..
+TOP = ../..
 include $(TOP)/configure/CONFIG
 
 USR_CPPFLAGS += -DMCPSERVER_API_BUILDING

@@ -1,0 +1,8 @@
+# Site-specific build settings.
+# Overrides CONFIG values for this site.
+
+# Uncomment to cross-compile:
+# CROSS_COMPILER_TARGET_ARCHS = linux-aarch64
+
+# Uncomment to force a specific host arch:
+# EPICS_HOST_ARCH = linux-x86_64
