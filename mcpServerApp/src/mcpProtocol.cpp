@@ -37,8 +37,19 @@ static void sendError(long long id, int code, const char *message,
     mcpProtocolFlush(gen, writeFn, writeCtx);
 }
 
-static void handleInitialize(long long id, McpWriteFn writeFn, void *writeCtx)
+static void handleInitialize(McpJsonValue *root, long long id,
+                             McpWriteFn writeFn, void *writeCtx)
 {
+    /* Version negotiation: if client requests a version we don't support,
+       respond with our own. Client decides whether to disconnect. */
+    McpJsonValue *params = mcpJsonMapGet(root, "params");
+    const char *clientVer = params
+        ? mcpJsonGetString(mcpJsonMapGet(params, "protocolVersion"))
+        : NULL;
+    const char *agreedVer = (clientVer && strcmp(clientVer, MCP_PROTOCOL_VERSION) == 0)
+        ? clientVer
+        : MCP_PROTOCOL_VERSION;
+
     yajl_gen gen = yajl_gen_alloc(NULL);
     yajl_gen_map_open(gen);
     mcpGenKeyString(gen, "jsonrpc", "2.0");
@@ -47,24 +58,34 @@ static void handleInitialize(long long id, McpWriteFn writeFn, void *writeCtx)
 
     mcpGenString(gen, "result");
     yajl_gen_map_open(gen);
-    mcpGenKeyString(gen, "protocolVersion", MCP_PROTOCOL_VERSION);
+    mcpGenKeyString(gen, "protocolVersion", agreedVer);
 
     mcpGenString(gen, "capabilities");
     yajl_gen_map_open(gen);
     mcpGenString(gen, "tools");
     yajl_gen_map_open(gen);
+    mcpGenKeyBool(gen, "listChanged", 0);
     yajl_gen_map_close(gen);
     yajl_gen_map_close(gen);
 
     mcpGenString(gen, "serverInfo");
     yajl_gen_map_open(gen);
     mcpGenKeyString(gen, "name", MCP_SERVER_NAME);
+    mcpGenKeyString(gen, "title", "EPICS MCP Server");
     mcpGenKeyString(gen, "version", MCP_SERVER_VERSION);
     yajl_gen_map_close(gen);
+
+    mcpGenKeyString(gen, "instructions",
+        "Use epics_get/epics_put to read/write EPICS PVs. "
+        "Use epics_monitor to collect changes over a time window. "
+        "Use epics_info for connection metadata and type info. "
+        "epics_iocsh/epics_dbl/epics_dbload require IOC-embedded mode.");
 
     yajl_gen_map_close(gen);
     yajl_gen_map_close(gen);
     mcpProtocolFlush(gen, writeFn, writeCtx);
+
+    mcpState.initialized = 1;
 }
 
 static void handleToolsList(long long id, McpWriteFn writeFn, void *writeCtx)
@@ -177,7 +198,7 @@ void mcpProtocolHandleRequest(const char *line, McpWriteFn writeFn, void *writeC
     }
 
     if (strcmp(method, "initialize") == 0) {
-        handleInitialize(id, writeFn, writeCtx);
+        handleInitialize(root, id, writeFn, writeCtx);
     }
     else if (strcmp(method, "notifications/initialized") == 0) {
         /* no response */

@@ -8,9 +8,12 @@ typedef int (*McpToolHandler)(const McpJsonValue *params, yajl_gen gen);
 
 typedef struct {
     const char *name;
+    const char *title;             /* human-readable display name (2025-11-25) */
     const char *description;
     McpToolHandler handler;
     void (*writeSchema)(yajl_gen gen);
+    const char * const *required;  /* NULL-terminated list of required param names;
+                                      NULL = no-parameter tool */
 } McpToolDef;
 
 void mcpToolsInit(void);

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "mcpJson.h"
 
-#define MCP_PROTOCOL_VERSION "2024-11-05"
+#define MCP_PROTOCOL_VERSION "2025-11-25"
 #define MCP_SERVER_NAME "EPICS Base MCP Server"
 #define MCP_SERVER_VERSION "2.0.0"
 

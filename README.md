@@ -292,3 +292,12 @@ epics_dbload
 
 Load a .db/.dbd file. Stub in standalone mode — use epics_iocsh +
 "dbLoadRecords(\"file.db\",\"macros\")".
+
+---
+
+## Revision History
+
+| Version | Date | Notes |
+|---|---|---|
+| 2.0.0 | 2026-05-31 | Restructured as standalone EPICS support module (configure/ dir, mcpServerApp/ layout). Upgraded MCP protocol to 2025-11-25: version negotiation in initialize, tool `title` and `required` schema fields, `additionalProperties:false` for no-param tools, `MCP-Protocol-Version` response header, `instructions` in initialize response. HTTP endpoint renamed `/message` → `/mcp`. |
+| 1.x | — | Embedded in epics-base/modules. Protocol version 2024-11-05. Stdio + HTTP transports. |

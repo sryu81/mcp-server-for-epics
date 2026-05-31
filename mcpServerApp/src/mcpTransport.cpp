@@ -151,6 +151,7 @@ static enum MHD_Result answerToConnection(
             respLen, respStr, MHD_RESPMEM_MUST_FREE);
         MHD_add_response_header(resp, "Content-Type", "application/json");
         MHD_add_response_header(resp, "Access-Control-Allow-Origin", "*");
+        MHD_add_response_header(resp, "MCP-Protocol-Version", MCP_PROTOCOL_VERSION);
         enum MHD_Result rc = MHD_queue_response(connection, MHD_HTTP_OK, resp);
         MHD_destroy_response(resp);
         return rc;
