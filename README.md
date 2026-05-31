@@ -158,7 +158,7 @@ HTTP endpoints (mcpTransport.cpp):
 
 | Method | URL | Purpose |
 |---|---|---|
-| POST | /message | JSON-RPC request (max body: 256 KB) |
+| POST | /mcp | JSON-RPC request (max body: 256 KB) |
 | GET | /events | SSE endpoint (placeholder; returns endpoint info) |
 | OPTIONS | any | CORS preflight |
 
@@ -168,12 +168,12 @@ HTTP endpoints (mcpTransport.cpp):
 HTTP client usage:
 ```sh
 # Initialize
-curl -s -X POST http://ioc-host:8080/message \
+curl -s -X POST http://ioc-host:8080/mcp \
 -H 'Content-Type: application/json' \
 -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}'
 
 # Call a tool
-curl -s -X POST http://ioc-host:8080/message \
+curl -s -X POST http://ioc-host:8080/mcp \
 -H 'Content-Type: application/json' \
 -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"epics_get","arguments":{"pvn
 ames":["MY:PV"]}}}'
