@@ -1,9 +1,14 @@
 # Path to EPICS Base (EPICS 7.0+)
 # Adjust to match your installation
-EPICS_BASE = /usr/local/epics/base
+# EPICS_BASE = /usr/local/epics/base
 
 # In EPICS 7, pvAccess/pvaClient/pvData are bundled with Base.
 # No separate module paths are required.
 
 # -CHECK- Uncomment and set if you use an external pvaClient build:
 # PVACLIENTS = /path/to/pvaClient
+# These lines allow developers to override these RELEASE settings
+# without having to modify this file directly.
+-include $(TOP)/../RELEASE.local
+-include $(TOP)/../RELEASE.$(EPICS_HOST_ARCH).local
+-include $(TOP)/configure/RELEASE.local

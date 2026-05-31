@@ -10,8 +10,7 @@ include $(TOP)/configure/CONFIG
 USR_CPPFLAGS += -DMCPSERVER_API_BUILDING
 
 # Shared library: libmcpServer.so
-LIBRARY += mcpServer
-SHRLIB_VERSION = 1.0
+LIBRARY_IOC = mcpServer
 
 mcpServer_SRCS = mcpJson.cpp mcpTransport.cpp mcpProtocol.cpp
 mcpServer_SRCS += mcpTools.cpp mcpServerLib.cpp mcpServerRegister.cpp
