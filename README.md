@@ -212,11 +212,13 @@ All other methods → error -32601 Method not found.
 
 ## Tools Reference
 
+<details>
+  <summary>Click here to expand the section</summary>
+  
+
 All tools accept an optional "protocol": "pva" (default) or "protocol": "ca" parameter.
 
-epics_get
-
-Read one or more PVs.
+**epics_get** : Read one or more PVs.
 ```json
 {
 "pvnames": ["MY:TEMP", "MY:PRESSURE"],
@@ -227,9 +229,7 @@ Read one or more PVs.
 - pvnames: array of strings (required)
 - timeout: seconds (default 5.0, defined in mcpServer.h:MCP_DEFAULT_TIMEOUT)
 
-epics_put
-
-Write a value to a PV.
+**epics_put** : Write a value to a PV.
 ```json
 {
 "pvname": "MY:SETPOINT",
@@ -240,9 +240,7 @@ Write a value to a PV.
 ```
 - value: string, integer, or double (no arrays/objects)
 
-epics_monitor
-
-Collect all value changes over a time window.
+**epics_monitor** : Collect all value changes over a time window.
 ```json
 {
 "pvnames": ["MY:WAVEFORM"],
@@ -252,18 +250,16 @@ Collect all value changes over a time window.
 ```
 - duration: seconds, capped at 30.0 (MCP_MONITOR_MAX_DURATION), minimum 1.0
 
-epics_info
+**epics_info** : Connection and metadata for PVs (type, host, alarm status, etc.).
+
 ```json
-Connection and metadata for PVs (type, host, alarm status, etc.).
 {
 "pvnames": ["MY:PV"],
 "protocol": "pva"
 } 
 ```
 
-epics_iocsh (IOC-embedded only)
-
-Execute any iocsh command; stdout captured via pipe (POSIX only — Windows returns stub).
+**epics_iocsh (IOC-embedded only)** : Execute any iocsh command; stdout captured via pipe (POSIX only — Windows returns stub).
 ```json
 {
 "command": "dbl"
@@ -275,25 +271,23 @@ Returns:
 ``` 
 Buffer capped at 8192 bytes (IOCSH_BUF_SIZE).
 
-epics_version
+**epics_version**
+- No parameters. Returns EPICS version string, arch, major/minor/patch, protocol enable flags.
 
-No parameters. Returns EPICS version string, arch, major/minor/patch, protocol enable flags.
+**epics_status**
+- No parameters. Returns server name, server version, EPICS version, protocol availability map.
 
-epics_status
-
-No parameters. Returns server name, server version, EPICS version, protocol availability map.
-
-epics_dbl
-
-Lists database records. Currently a stub in standalone mode — use epics_iocsh + "dbl" command
+**epics_dbl**
+- Lists database records. Currently a stub in standalone mode — use epics_iocsh + "dbl" command
 instead.
 
-epics_dbload
-
-Load a .db/.dbd file. Stub in standalone mode — use epics_iocsh +
+**epics_dbload**
+- Load a .db/.dbd file. Stub in standalone mode — use epics_iocsh +
 "dbLoadRecords(\"file.db\",\"macros\")".
 
 ---
+</details>
+
 
 ## Revision History
 
