@@ -1,6 +1,6 @@
-# MCP Server for EPICS base
+# MCP Server for EPICS
 
-A working well MCP server for epics ioc for linux compatible OS... (maybe).
+A working well (maybe) MCP server support module for epics.
 
 Just give your controls to your AI agent.
 
@@ -57,7 +57,7 @@ This is a standalone EPICS support module.
 
 ```bash
 cd $MODULES    <-- your module location
-git clone https://github.com/sryu81/mcp-server-for-epics-base.git mcpServer
+git clone https://github.com/sryu81/mcp-server-for-epics.git mcpServer
 cd mcpServer
 ```
 
